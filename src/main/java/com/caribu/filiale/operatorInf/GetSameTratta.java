@@ -49,14 +49,19 @@ public class GetSameTratta implements Handler<RoutingContext> {
 
 
     private void getTratta(RoutingContext context){
+            // FIRENZE -> ROMA
+        // oLat="43,7792500"&oLon="11.2462600"&dLat="41.8919300"&dLon="2.5113300"
+        
+
         // String longitudine = context.request().getParam("longitudine");
         // String latitudine = context.request().getParam("latitudine");
         // String id_tratta = context.request().getParam("id_tratta");
-        String oLat = context.request().getParam("oLat");
-        String oLon = context.request().getParam("oLon");
-        String dLat = context.request().getParam("dLat");
-        String dLon = context.request().getParam("dLon");
+        Float oLat = Float.parseFloat(context.request().getParam("oLat"));
+        Float oLon =  Float.parseFloat(context.request().getParam("oLon"));
+        Float dLat =  Float.parseFloat(context.request().getParam("dLat"));
+        Float dLon =  Float.parseFloat(context.request().getParam("dLon"));
 
+        // Create origin and destination geometry points
 
         Map<String, Object> parameters = new HashMap<>();
                     parameters.put("oLat", oLat);
@@ -64,15 +69,13 @@ public class GetSameTratta implements Handler<RoutingContext> {
                     parameters.put("dLat", dLat);
                     parameters.put("dLon", dLon);
 
-                    // parameters.put("id_tratta", id_tratta);
-                    // parameters.put("longitudine", longitudine);
-                    // parameters.put("latitudine", latitudine);
-        // Create origin and destination geometry points
-        String originPoint = "ST_SetSRID(ST_MakePoint(" + oLon + ", " + oLat + "), 4326)";
-        String destPoint = "ST_SetSRID(ST_MakePoint(" + dLon + ", " + dLat + "), 4326)";
+                    //BETWEEN (#{input_distance} - 10) AND (#{input_distance} + 10)
          // AND ST_DistanceSphere(#{destPoint}, #{originPoint}) < 10000")
-        SqlTemplate.forQuery(db,
-            "SELECT * from schema.tratta o where ST_DistanceSphere(o.origin_geom, o.destination_geom) > 10")
+         String input_Ogeo= "ST_SetSRID(ST_MakePoint(#{oLon} , #{oLat}), 4326)";
+         String input_Dgeo= "ST_SetSRID(ST_MakePoint(#{dLon} , #{dLat}), 4326)";
+         String distance = "ST_DistanceSphere("+input_Ogeo+ "," + input_Dgeo + ")"; 
+         String query= "SELECT * from schema.tratta o where ST_DistanceSphere(o.origin_geom, o.destination_geom) <=" + distance + " - 100 AND ST_DistanceSphere(o.origin_geom, o.destination_geom) > "+ distance + " + 100";
+        SqlTemplate.forQuery(db,query)
             .rxExecute(parameters)  //TODO
             .doOnError(err -> {
                 LOG.debug("Failure: ", err , err.getMessage());
@@ -98,7 +101,8 @@ public class GetSameTratta implements Handler<RoutingContext> {
                     context.response()
                     .putHeader(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
                     .end(response.encode());
-                }).subscribe();
+                }).subscribe(succ->{},err -> {
+                LOG.debug("Failure2: ", err , err.getMessage());});
         }
 
     private void getAllTratta(RoutingContext context){
