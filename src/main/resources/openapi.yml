@@ -1,0 +1,224 @@
+openapi: 3.0.1
+info:
+  title: Quotes API
+  version: 1.0.0
+servers:
+  - url: http://localhost
+    description: My server
+
+paths:
+  /quotes:
+    # POST operation for creating a new quote
+    post:
+      summary: Create a new quote
+      operationId: addQuotes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Quote'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+
+    # GET operation for retrieving all quotes
+    get:
+      summary: Get all quotes
+      operationId: listQuotes
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quote'
+
+  /quotes/{id_quotes}:
+    # GET operation for retrieving a specific quote
+    get:
+      summary: Get a specific quote by id_quotes
+      operationId: getQuote
+      parameters:
+        - name: id_quotes
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+
+    # PUT operation for updating a specific quote
+    put:
+      summary: Update a specific quote by id_quotes
+      operationId: updateQuote
+      parameters:
+        - name: id_quotes
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Quote'
+      responses:
+        '204':
+          description: No Content
+
+    # DELETE operation for deleting a specific quote
+    delete:
+      summary: Delete a specific quote by id_quotes
+      operationId: deleteQuote
+      parameters:
+        - name: id_quotes
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+  /tratta:
+    get:
+      summary: Get all tratta records
+      operationId: listTratta
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tratta'
+    post:
+      summary: Create a new tratta record
+      operationId: addTratta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              items:
+                $ref: '#/components/schemas/Tratta'
+      responses:
+        '200':
+          description: Operator added successfully
+        '400':
+          description: Invalid input
+  /tratta/{id_tratta}:
+    get:
+      summary: Get a single tratta record by ID
+      operationId: getTratta
+      parameters:
+        - name: id_tratta
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tratta'
+    put:
+      summary: Update a tratta record by ID
+      operationId: updateTrattaById
+      parameters:
+        - name: id_tratta
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tratta'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tratta'
+    delete:
+      summary: Delete a tratta record by ID
+      operationId: deleteTratta
+      parameters:
+        - name: id_tratta
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+
+components:
+  schemas:
+    Tratta:
+      type: object
+      properties:
+        id_tratta:
+          type: string
+          description: Primary key for tratta
+        latitudine:
+          type: integer
+          description: Latitude value
+        longitudine:
+          type: integer
+          description: Longitude value
+        location:
+          type: string
+          description: Location in geography(POINT, 4326) format
+      required:
+        - id_tratta
+        - latitudine
+        - longitudine
+    Quote:
+      type: object
+      properties:
+        id_quotes:
+          type: string
+        operativo:
+          type: string
+        lunghezza:
+          type: integer
+        larghezza:
+          type: integer
+        profondità:
+          type: integer
+        id_fornitore:
+          type: string
+        id_tratta:
+          type: string
+        costo:
+          type: integer
+      required:
+        - id_quotes
+        - operativo
+        - lunghezza
+        - larghezza
+        - profondità
+        - id_fornitore
+        - id_tratta
+        - costo
