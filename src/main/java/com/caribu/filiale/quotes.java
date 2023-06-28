@@ -9,14 +9,19 @@ import lombok.NoArgsConstructor;
 @Data
 public class quotes {
     
- String id_tratta;
-Integer latitudine;
-Integer longitudine;
+ String id_quotes;
 
 Double oLat;
 Double oLon;
 Double dLat;
 Double dLon;
+
+//                 operativo VARCHAR(10),
+//                 lunghezza INTEGER,
+//                 larghezza INTEGER, 
+//                 profondità INTEGER,
+//                 id_fornitore VARCHAR,
+//                 costo INTEGER,
 
 //etc...
    

@@ -8,94 +8,9 @@ servers:
 
 paths:
   /quotes:
-    # POST operation for creating a new quote
-    post:
-      summary: Create a new quote
-      operationId: addQuotes
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Quote'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Quote'
-
-    # GET operation for retrieving all quotes
     get:
-      summary: Get all quotes
+      summary: Get all quotes records
       operationId: listQuotes
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Quote'
-
-  /quotes/{id_quotes}:
-    # GET operation for retrieving a specific quote
-    get:
-      summary: Get a specific quote by id_quotes
-      operationId: getQuote
-      parameters:
-        - name: id_quotes
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Quote'
-
-    # PUT operation for updating a specific quote
-    put:
-      summary: Update a specific quote by id_quotes
-      operationId: updateQuote
-      parameters:
-        - name: id_quotes
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Quote'
-      responses:
-        '204':
-          description: No Content
-
-    # DELETE operation for deleting a specific quote
-    delete:
-      summary: Delete a specific quote by id_quotes
-      operationId: deleteQuote
-      parameters:
-        - name: id_quotes
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: No Content
-  /tratta:
-    get:
-      summary: Get all tratta records
-      operationId: listTratta
       responses:
         '200':
           description: Success
@@ -104,10 +19,10 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Tratta'
+                  $ref: '#/components/schemas/Quotes'
     post:
-      summary: Create a new tratta record
-      operationId: addTratta
+      summary: Create a new quotes record
+      operationId: addQuotes
       requestBody:
         required: true
         content:
@@ -115,18 +30,18 @@ paths:
             schema:
               type: object
               items:
-                $ref: '#/components/schemas/Tratta'
+                $ref: '#/components/schemas/Quotes'
       responses:
         '200':
-          description: Operator added successfully
+          description: Quotes added successfully
         '400':
           description: Invalid input
-  /tratta/{id_tratta}:
+  /tratta/{id_quotes}:
     get:
-      summary: Get a single tratta record by ID
-      operationId: getTratta
+      summary: Get a single quotes record by ID
+      operationId: getQuotes
       parameters:
-        - name: id_tratta
+        - name: id_quotes
           in: path
           required: true
           schema:
@@ -137,12 +52,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Tratta'
+                $ref: '#/components/schemas/Quotes'
     put:
-      summary: Update a tratta record by ID
-      operationId: updateTrattaById
+      summary: Update a quotes record by ID
+      operationId: updateQuotesById
       parameters:
-        - name: id_tratta
+        - name: id_quotes
           in: path
           required: true
           schema:
@@ -152,19 +67,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Tratta'
+              $ref: '#/components/schemas/Quotes'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Tratta'
+                $ref: '#/components/schemas/Quotes'
     delete:
-      summary: Delete a tratta record by ID
-      operationId: deleteTratta
+      summary: Delete a quotes record by ID
+      operationId: deleteQuotes
       parameters:
-        - name: id_tratta
+        - name: id_quotes
           in: path
           required: true
           schema:
@@ -175,26 +90,7 @@ paths:
 
 components:
   schemas:
-    Tratta:
-      type: object
-      properties:
-        id_tratta:
-          type: string
-          description: Primary key for tratta
-        latitudine:
-          type: integer
-          description: Latitude value
-        longitudine:
-          type: integer
-          description: Longitude value
-        location:
-          type: string
-          description: Location in geography(POINT, 4326) format
-      required:
-        - id_tratta
-        - latitudine
-        - longitudine
-    Quote:
+    Quotes:
       type: object
       properties:
         id_quotes:
@@ -213,6 +109,12 @@ components:
           type: string
         costo:
           type: integer
+        origin_geom:
+          type: string
+          description: Location in geography(POINT, 4326) format
+        destination_geom:
+          type: string
+          description: Location in geography(POINT, 4326) format
       required:
         - id_quotes
         - operativo
@@ -222,3 +124,5 @@ components:
         - id_fornitore
         - id_tratta
         - costo
+        - origin_geom
+        - destination_geom

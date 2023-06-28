@@ -63,11 +63,11 @@ public class VertxRxWeb extends AbstractVerticle {
         .doOnSuccess(routerBuilder -> { // (1)
 
         //routerBuilder.operation("listQuotes").handler(new GetAllOpFromDatabaseHandler(db)); // (3)
-        routerBuilder.operation("listTratta").handler(new GetSameTratta(db)); // (3)
-        routerBuilder.operation("getTratta").handler(new GetOpFromDatabaseHandler(db)); // (3)
+        routerBuilder.operation("listQuotes").handler(new GetSameTratta(db)); // (3)
+        routerBuilder.operation("getQuotes").handler(new GetOpFromDatabaseHandler(db)); // (3)
         //routerBuilder.operation("updateOpAvailability").handler(new PutOpDatabaseHandler(db)); // (3)
-        routerBuilder.operation("deleteTratta").handler(new DeleteOpDatabaseHandler(db)); // (3)
-        routerBuilder.operation("addTratta").handler(new PostOpFromDatabaseHandler(db)); // (3)
+        routerBuilder.operation("deleteQuotes").handler(new DeleteOpDatabaseHandler(db)); // (3)
+        routerBuilder.operation("addQuotes").handler(new PostOpFromDatabaseHandler(db)); // (3)
         
         Router restApi = routerBuilder.createRouter();
         restApi.route().handler(BodyHandler.create());

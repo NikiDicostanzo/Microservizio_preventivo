@@ -43,7 +43,7 @@ public class GetSameTratta implements Handler<RoutingContext> {
         if(oLat == null || oLon == null || dLat == null || dLon == null){
             // Get all tratta
             LOG.info("Executing DB query to find all tratta...");
-            String query= "SELECT *,  ST_DistanceSphere(o.origin_geom, o.destination_geom) as dist FROM schema.tratta o";
+            String query= "SELECT *,  ST_DistanceSphere(o.origin_geom, o.destination_geom) as dist FROM schema.quotes o";
             setQuery(context, query, null);;
         }
         else{
@@ -72,7 +72,7 @@ public class GetSameTratta implements Handler<RoutingContext> {
          String input_Dgeo= "ST_SetSRID(ST_MakePoint(#{dLon} , #{dLat}), 4326)";
          String distance = "ST_DistanceSphere("+ input_Ogeo + "," + input_Dgeo + ")"; 
          
-         String query= "SELECT *, ST_DistanceSphere(o.origin_geom, o.destination_geom) as dist from schema.tratta o where ST_DistanceSphere(o.origin_geom, o.destination_geom) BETWEEN "+distance+"-10000 AND "+distance+"+10000";
+         String query= "SELECT *, ST_DistanceSphere(o.origin_geom, o.destination_geom) as dist from schema.quotes o where ST_DistanceSphere(o.origin_geom, o.destination_geom) BETWEEN "+distance+"-10000 AND "+distance+"+10000";
          setQuery(context, query, parameters);
     }
 
@@ -93,7 +93,7 @@ public class GetSameTratta implements Handler<RoutingContext> {
                 result.forEach(row -> {
                     JsonObject rowJson = new JsonObject()
                     .put("dist", row.getValue("dist"))    
-                    .put("id_tratta", row.getValue("id_tratta"))
+                    .put("id_quotes", row.getValue("id_quotes"))
                     .put("origin_geom", row.getValue("origin_geom"))
                     .put("destination_geom", row.getValue("destination_geom"));
                     response.add(rowJson);

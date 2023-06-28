@@ -29,13 +29,12 @@ public class GetOpFromDatabaseHandler implements Handler<RoutingContext> {
   @Override
   public void handle(final RoutingContext context) {
     //final String nameParm = context.pathParam("nameop");
-    final String id_tratta = context.pathParam("id_tratta");
-    LOG.debug("Id parameter: {}", id_tratta);
-//    final String id_tratta = context.pathParam("id_tratta");
+    final String id_quotes = context.pathParam("id_quotes");
+    LOG.debug("Id parameter: {}", id_quotes);
 
     SqlTemplate.forQuery(db,
-      "SELECT * from schema.tratta o where id_tratta=#{id_tratta}")
-      .rxExecute(Collections.singletonMap("id_tratta", id_tratta))
+      "SELECT * from schema.quotes o where id_quotes=#{id_quotes}")
+      .rxExecute(Collections.singletonMap("id_quotes", id_quotes))
       .doOnError(err -> {
           LOG.debug("Failure: ", err , err.getMessage());
           context.response()
@@ -45,7 +44,7 @@ public class GetOpFromDatabaseHandler implements Handler<RoutingContext> {
     })
       .doOnSuccess(op -> {
         if (!op.iterator().hasNext()) {
-          DbResponse.notFound(context, "operator " + id_tratta + " not available!");
+          DbResponse.notFound(context, "quotes " + id_quotes + " not available!");
           return;
         }
         var response = op.iterator().next().toJson(); // operator class

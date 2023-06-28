@@ -35,6 +35,14 @@ public class PostOpFromDatabaseHandler implements Handler<RoutingContext> {
 
     //var json = context.body().asJsonObject();
     //var watchList = json.mapTo(WatchList.class);
+                  //AGGIUNGERE
+    //             operativo VARCHAR(10),
+    //             lunghezza INTEGER,
+    //             larghezza INTEGER, 
+    //             profondità INTEGER,
+    //             id_fornitore VARCHAR,
+    //             costo INTEGER,
+
     System.out.println("QUIIIIII");
 
     RequestParameters params = context.get(ValidationHandler.REQUEST_CONTEXT_KEY); // (1)
@@ -45,9 +53,7 @@ public class PostOpFromDatabaseHandler implements Handler<RoutingContext> {
     var parameterBatch = watchList.getOp().stream()
       .map(op -> {
         final Map<String, Object> parameters = new HashMap<>();
-        parameters.put("id_tratta", op.getId_tratta());
-        parameters.put("latitudine", op.getLatitudine());
-        parameters.put("longitudine", op.getLongitudine());
+        parameters.put("id_quotes", op.getId_quotes());
         parameters.put("oLat", op.getOLat());
         parameters.put("oLon", op.getOLon());
         parameters.put("dLat", op.getDLat());
@@ -56,13 +62,13 @@ public class PostOpFromDatabaseHandler implements Handler<RoutingContext> {
       }).collect(Collectors.toList());
 
       SqlTemplate.forUpdate(db,
-      "INSERT INTO schema.tratta VALUES (#{id_tratta},#{latitudine},#{longitudine},ST_SetSRID(ST_Point(#{oLat}, #{oLon}), 4326),ST_SetSRID(ST_Point(#{dLat}, #{dLon}), 4326))"
-      + "ON CONFLICT (id_tratta) DO NOTHING")
+      "INSERT INTO schema.quotes VALUES (#{id_tratta},#{latitudine},#{longitudine},ST_SetSRID(ST_Point(#{oLat}, #{oLon}), 4326),ST_SetSRID(ST_Point(#{dLat}, #{dLon}), 4326))"
+      + "ON CONFLICT (id_quotes) DO NOTHING")
       .rxExecuteBatch(parameterBatch)
       .doOnError(err-> {LOG.debug("Failure: ", err , err.getMessage());})
       .doOnSuccess(result -> {
         
-        LOG.info("Add tratta: ??????????,",result);
+        LOG.info("Add quotes: ??????????,",result);
         //if(context.response().ended()){
         context.response()
         .setStatusCode(200)
