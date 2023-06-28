@@ -13,8 +13,8 @@ import com.caribu.filiale.eliminare.WatchList;
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.validation.RequestParameters;
 import io.vertx.rxjava3.ext.web.RoutingContext;
-import io.vertx.rxjava3.ext.web.validation.RequestParameters;
 import io.vertx.rxjava3.ext.web.validation.ValidationHandler;
 import io.vertx.rxjava3.sqlclient.templates.SqlTemplate;
 import io.vertx.rxjava3.sqlclient.Pool;
@@ -41,33 +41,33 @@ public class PostOpFromDatabaseHandler implements Handler<RoutingContext> {
     JsonObject json = params.body().getJsonObject(); // (2)
     System.out.println("json:  " + params.body());
 
-    // var watchList = json.mapTo(WatchList.class);
-    // var parameterBatch = watchList.getOp().stream()
-    //   .map(op -> {
-    //     final Map<String, Object> parameters = new HashMap<>();
-    //     parameters.put("id_tratta", op.getId_tratta());
-    //     parameters.put("latitudine", op.getLatitudine());
-    //     parameters.put("longitudine", op.getLongitudine());
-    //     parameters.put("oLat", op.getOLat());
-    //     parameters.put("oLon", op.getOLon());
-    //     parameters.put("dLat", op.getDLat());
-    //     parameters.put("dLon", op.getDLon());
-    //     return parameters;
-    //   }).collect(Collectors.toList());
+    var watchList = json.mapTo(WatchList.class);
+    var parameterBatch = watchList.getOp().stream()
+      .map(op -> {
+        final Map<String, Object> parameters = new HashMap<>();
+        parameters.put("id_tratta", op.getId_tratta());
+        parameters.put("latitudine", op.getLatitudine());
+        parameters.put("longitudine", op.getLongitudine());
+        parameters.put("oLat", op.getOLat());
+        parameters.put("oLon", op.getOLon());
+        parameters.put("dLat", op.getDLat());
+        parameters.put("dLon", op.getDLon());
+        return parameters;
+      }).collect(Collectors.toList());
 
-    //   SqlTemplate.forUpdate(db,
-    //   "INSERT INTO schema.tratta VALUES (#{id_tratta},#{latitudine},#{longitudine});"
-    //   + "ON CONFLICT (id_tratta) DO NOTHING")
-    //   .rxExecuteBatch(parameterBatch)
-    //   .doOnError(err-> {LOG.debug("Failure: ", err , err.getMessage());})
-    //   .doOnSuccess(result -> {
+      SqlTemplate.forUpdate(db,
+      "INSERT INTO schema.tratta VALUES (#{id_tratta},#{latitudine},#{longitudine},ST_SetSRID(ST_Point(#{oLat}, #{oLon}), 4326),ST_SetSRID(ST_Point(#{dLat}, #{dLon}), 4326))"
+      + "ON CONFLICT (id_tratta) DO NOTHING")
+      .rxExecuteBatch(parameterBatch)
+      .doOnError(err-> {LOG.debug("Failure: ", err , err.getMessage());})
+      .doOnSuccess(result -> {
         
-    //     LOG.info("Add operator: ??????????,",result);
-    //     //if(context.response().ended()){
-    //     context.response()
-    //     .setStatusCode(200)
-    //     .end("Element added successfully");
-    //    // }
-    //   });
-    }  
+        LOG.info("Add tratta: ??????????,",result);
+        //if(context.response().ended()){
+        context.response()
+        .setStatusCode(200)
+        .end("Element added successfully");
+       // }
+      }).subscribe();
+      }  
 }
