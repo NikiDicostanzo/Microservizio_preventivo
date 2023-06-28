@@ -32,27 +32,34 @@ public class GetSameTratta implements Handler<RoutingContext> {
     @Override
     public void handle(final RoutingContext context) {
         // in input ho origine=(LAT, LONG), destinazione=(LAT, LONG)
-        String origine = context.request().getParam("origine");
-        String destinazione = context.request().getParam("destinazione");
-        LOG.debug("Tratta : {}=>{}", origine, destinazione);
-        getTratta(context);
+             
         //String destinazione = context.pathParam("destinazione");
-//         if(origine == null){
-//             LOG.info("Executing DB query to find all users...");
-//             getAllTratta(context);
-//         }
-//         else{
-//            getTratta(context);
-//         }
-//    
-}
-    private void getTratta(RoutingContext context){
-            // FIRENZE -> ROMA
+        String oLat = context.request().getParam("oLat");
+        String oLon = context.request().getParam("oLon");
+        String dLat =  context.request().getParam("dLat");
+        String dLon = context.request().getParam("dLon");
+        LOG.debug("Tratta : {},{}=>{},{}", oLat,oLon,dLat,dLon);
+        //getDistance(context);
+        if(oLat == null || oLon == null || dLat == null || dLon == null){
+            // Get all tratta
+            LOG.info("Executing DB query to find all tratta...");
+            String query= "SELECT *,  ST_DistanceSphere(o.origin_geom, o.destination_geom) as dist FROM schema.tratta o";
+            setQuery(context, query, null);;
+        }
+        else{
+           getTratta(context, oLat, oLon, dLat, dLon);
+        }
+  
+    }
+    private void getTratta(RoutingContext context, String oLatS, String oLonS, String dLatS,String dLonS){
+        // FIRENZE -> ROMA
         // oLat=43,7792500&oLon=11.2462600&dLat=41.8919300&dLon=12.5113300
-        Float oLat = Float.parseFloat(context.request().getParam("oLat"));
-        Float oLon =  Float.parseFloat(context.request().getParam("oLon"));
-        Float dLat =  Float.parseFloat(context.request().getParam("dLat"));
-        Float dLon =  Float.parseFloat(context.request().getParam("dLon"));
+        // FIRENZE->PISA
+        // oLat=43.7792500&oLon=11.2462600&dLat=43.7085300&dLon=10.4036000
+        Float oLat = Float.parseFloat(oLatS);
+        Float oLon =  Float.parseFloat(oLonS);
+        Float dLat =  Float.parseFloat(dLatS);
+        Float dLon =  Float.parseFloat(dLonS);
 
         // Create origin and destination geometry points
         Map<String, Object> parameters = new HashMap<>();
@@ -61,16 +68,18 @@ public class GetSameTratta implements Handler<RoutingContext> {
                     parameters.put("dLat", dLat);
                     parameters.put("dLon", dLon);
 
-         //BETWEEN (#{input_distance} - 10) AND (#{input_distance} + 10)
-         // AND ST_DistanceSphere(#{destPoint}, #{originPoint}) < 10000")
          String input_Ogeo= "ST_SetSRID(ST_MakePoint(#{oLon} , #{oLat}), 4326)";
          String input_Dgeo= "ST_SetSRID(ST_MakePoint(#{dLon} , #{dLat}), 4326)";
          String distance = "ST_DistanceSphere("+ input_Ogeo + "," + input_Dgeo + ")"; 
          
-         String query= "SELECT *, ST_DistanceSphere(o.origin_geom, o.destination_geom) as dist from schema.tratta o where ST_DistanceSphere(o.origin_geom, o.destination_geom) BETWEEN "+distance+"-100 AND "+distance+"+100";
-         
-         SqlTemplate.forQuery(db,query)
-            .rxExecute(parameters)  //TODO
+         String query= "SELECT *, ST_DistanceSphere(o.origin_geom, o.destination_geom) as dist from schema.tratta o where ST_DistanceSphere(o.origin_geom, o.destination_geom) BETWEEN "+distance+"-10000 AND "+distance+"+10000";
+         setQuery(context, query, parameters);
+    }
+
+    private void setQuery(RoutingContext context, String query, Map<String, Object> parameters){
+            
+        SqlTemplate.forQuery(db,query)
+            .rxExecute(parameters)  
             .doOnError(err -> {
                 LOG.debug("Failure: ", err , err.getMessage());
                 context.response()
@@ -79,15 +88,12 @@ public class GetSameTratta implements Handler<RoutingContext> {
                     .end(new JsonObject().put("error", err.getMessage()).encode());
             })
             .doOnSuccess(result -> {
-                //TODO errore nome sbagliato
                 LOG.info("Got " + result.size() + " rows ");
                 JsonArray response = new JsonArray();
                 result.forEach(row -> {
                     JsonObject rowJson = new JsonObject()
                     .put("dist", row.getValue("dist"))    
                     .put("id_tratta", row.getValue("id_tratta"))
-                    .put("latitudine", row.getValue("latitudine"))
-                    .put("longitudine", row.getValue("longitudine"))
                     .put("origin_geom", row.getValue("origin_geom"))
                     .put("destination_geom", row.getValue("destination_geom"));
                     response.add(rowJson);
@@ -98,35 +104,6 @@ public class GetSameTratta implements Handler<RoutingContext> {
                     .end(response.encode());
                 }).subscribe(succ->{},err -> {
                 LOG.debug("Failure2: ", err , err.getMessage());});
-        }
-
-    private void getAllTratta(RoutingContext context){
-        db.query("SELECT * FROM schema.tratta")
-            .rxExecute()
-            .doOnSuccess(result -> {
-            LOG.info("Got " + result.size() + " rows ");
-            JsonArray response = new JsonArray();
-            result.forEach(row -> {
-                JsonObject rowJson = new JsonObject()
-                .put("id_tratta", row.getValue("id_tratta"))
-                .put("latitudine", row.getValue("latitudine"))
-                .put("longitudine", row.getValue("longitudine"));
-                response.add(rowJson);
-            });
-                LOG.info("Path {} responds with {}", context.normalizedPath(), response.encode());
-                context.response()
-                .putHeader(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
-                .end(response.encode());
-            })
-            .doOnError(err -> {
-            LOG.debug("Failure: ", err , err.getMessage());
-            context.response()
-                .putHeader(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
-                .setStatusCode(500)
-                .end(new JsonObject().put("error", err.getMessage()).encode());
-            })
-            .subscribe(sr->{},err->{LOG.debug("FailureSbu: ", err , err.getMessage());
-                }); // Don't forget to subscribe to the Single
     }
     
     private void getDistance(RoutingContext context){
@@ -146,10 +123,10 @@ public class GetSameTratta implements Handler<RoutingContext> {
 
                     //BETWEEN (#{input_distance} - 10) AND (#{input_distance} + 10)
          // AND ST_DistanceSphere(#{destPoint}, #{originPoint}) < 10000")
-         String input_Ogeo= "ST_SetSRID(ST_MakePoint(#{oLon} , #{oLat}), 4326)";
-         String input_Dgeo= "ST_SetSRID(ST_MakePoint(#{dLon} , #{dLat}), 4326)";
-         String distance = "ST_DistanceSphere("+input_Ogeo+ "," + input_Dgeo + ")"; 
-         String query= "SELECT " + distance +" as dist";
+        String input_Ogeo= "ST_SetSRID(ST_MakePoint(#{oLon} , #{oLat}), 4326)";
+        String input_Dgeo= "ST_SetSRID(ST_MakePoint(#{dLon} , #{dLat}), 4326)";
+        String distance = "ST_DistanceSphere("+input_Ogeo+ "," + input_Dgeo + ")"; 
+        String query= "SELECT " + distance +" as dist";
         SqlTemplate.forQuery(db,query)
             .rxExecute(parameters)  //TODO
             .doOnError(err -> {
@@ -174,20 +151,6 @@ public class GetSameTratta implements Handler<RoutingContext> {
                     .end(response.encode());
                 }).subscribe(succ->{},err -> {
                 LOG.debug("Failure2: ", err , err.getMessage());});
-        }
+    }
 
 }
-
-
-
-    
-
-// //TODO creare funzionE!!!
-//   JsonArray response = new JsonArray();
-//             result.forEach(row -> {
-//                 JsonObject rowJson = new JsonObject()
-//                 .put("id", row.getValue("id"))
-//                 .put("origine", row.getValue("origine"))
-//                 .put("destinazione", row.getValue("destinazione"))
-//                 .put("km", row.getValue("km"));
-//                 response.add(rowJson);
