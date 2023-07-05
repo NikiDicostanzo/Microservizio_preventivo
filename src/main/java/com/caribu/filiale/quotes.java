@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class quotes {
     
  String id_quotes;
+ String id_commission;
 
 Double oLat;
 Double oLon;

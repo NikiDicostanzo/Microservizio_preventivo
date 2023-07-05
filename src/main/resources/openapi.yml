@@ -36,7 +36,7 @@ paths:
           description: Quotes added successfully
         '400':
           description: Invalid input
-  /tratta/{id_quotes}:
+  /quotes/{id_quotes}:
     get:
       summary: Get a single quotes record by ID
       operationId: getQuotes
@@ -87,6 +87,23 @@ paths:
       responses:
         '204':
           description: No Content
+  /quotes/newComm:
+    post:
+      summary: Add element in cache
+      operationId: addQuotesCache
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              items:
+                $ref: '#/components/schemas/Quotes'
+      responses:
+        '200':
+          description: Quotes added successfully
+        '400':
+          description: Invalid input        
 
 components:
   schemas:

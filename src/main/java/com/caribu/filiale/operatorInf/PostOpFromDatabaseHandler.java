@@ -62,7 +62,7 @@ public class PostOpFromDatabaseHandler implements Handler<RoutingContext> {
       }).collect(Collectors.toList());
 
       SqlTemplate.forUpdate(db,
-      "INSERT INTO schema.quotes VALUES (#{id_tratta},#{latitudine},#{longitudine},ST_SetSRID(ST_Point(#{oLat}, #{oLon}), 4326),ST_SetSRID(ST_Point(#{dLat}, #{dLon}), 4326))"
+      "INSERT INTO schema.quotes VALUES (#{id_quotes},ST_SetSRID(ST_Point(#{oLat}, #{oLon}), 4326),ST_SetSRID(ST_Point(#{dLat}, #{dLon}), 4326))"
       + "ON CONFLICT (id_quotes) DO NOTHING")
       .rxExecuteBatch(parameterBatch)
       .doOnError(err-> {LOG.debug("Failure: ", err , err.getMessage());})

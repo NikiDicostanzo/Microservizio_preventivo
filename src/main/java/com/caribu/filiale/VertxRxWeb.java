@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import com.caribu.filiale.config.BrokerConfig;
 import com.caribu.filiale.config.ConfigLoader;
 import com.caribu.filiale.eliminare.GetAllOpFromDatabaseHandler;
+import com.caribu.filiale.operatorInf.AddQuotesCache;
 import com.caribu.filiale.operatorInf.DeleteOpDatabaseHandler;
 import com.caribu.filiale.operatorInf.GetOpFromDatabaseHandler;
 import com.caribu.filiale.operatorInf.GetSameTratta;
@@ -68,7 +69,8 @@ public class VertxRxWeb extends AbstractVerticle {
         //routerBuilder.operation("updateOpAvailability").handler(new PutOpDatabaseHandler(db)); // (3)
         routerBuilder.operation("deleteQuotes").handler(new DeleteOpDatabaseHandler(db)); // (3)
         routerBuilder.operation("addQuotes").handler(new PostOpFromDatabaseHandler(db)); // (3)
-        
+        routerBuilder.operation("addQuotesCache").handler(new AddQuotesCache(db)); // (3)
+
         Router restApi = routerBuilder.createRouter();
         restApi.route().handler(BodyHandler.create());
       
